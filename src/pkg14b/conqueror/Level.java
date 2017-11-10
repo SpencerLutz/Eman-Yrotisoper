@@ -1,6 +1,6 @@
 package pkg14b.conqueror;
 
-public class Generate {
+public class Level {
     final int width = 45, height = 26;
     int turn = 1;
     int food[] = new int[7];//50
@@ -15,12 +15,16 @@ public class Generate {
     int s[][] = new int[width][height]; //gold[1]
     int o[][] = new int[width][height]; //owner
     int i[][] = new int[width][height]; //improvement
-    boolean is0 = false;
+    int u[][] = new int[width][height]; //unit
+    int sx = 0, sy = 0;
+    boolean r[][] = new boolean[width][height];
+    boolean is0 = false, select = false;
     public void gen(int size, int toVal, int fromVal, boolean inland){
-        for(int i = 1; i < 7; i++){
-            food[i] = 53;
-            gold[i] = 403;
-            popu[i] = 3;
+        for(int j = 1; j < 7; j++){
+            food[j] = 53;
+            gold[j] = 403;//403
+            popu[j] = 3;
+            a[j] = true;
         }
         is0 = true;
         boolean w[][] = new boolean[width][height];
@@ -35,7 +39,7 @@ public class Generate {
                 }
             }
         }
-        for (int i = 0; i < size; i++){
+        for (int j = 0; j < size; j++){
             for (int x = 0; x < width; x++){
                 for (int y = 0; y < height; y++){
                     if(t[x][y] == fromVal){
@@ -69,7 +73,7 @@ public class Generate {
                                     }
                                 }
                             }
-                            if(inland && i < size/5){
+                            if(inland && j < size/5){
                                 if(c[x][y]){
                                     m[x][y] = true;
                                 }
@@ -115,31 +119,31 @@ public class Generate {
         }
     }
     public boolean edge(int x, int y, int dir){
-        boolean a = false;
+        boolean k = false;
             switch (dir) {
                 case 0:
                     if(y >= 1){
-                        a = true;
+                        k = true;
                     }       break;
                 case 1:
                     if(y < height-1){
-                        a = true;
+                        k = true;
                     }       break;
                 case 2:
                     if(x >= 1){
-                        a = true;
+                        k = true;
                     }       break;
                 case 3:
                     if(x < width-1){
-                        a = true;
+                        k = true;
                     }       break;
                 default:
                     break;
             }
-        return a;
+        return k;
     }
     public boolean[] neighbor(int x, int y, int testT){
-        boolean[] k = new boolean[8];
+        boolean[] k = new boolean[4];
         if(edge(x, y, 0) && t[x][y-1] == testT){
             k[0] = true;
         }
@@ -173,50 +177,98 @@ public class Generate {
         }
         return k;
     }
-    public boolean surround(int x, int y){
+    public boolean surround(int x, int y, int own, boolean zero){
         int k = 0;
         boolean b = false;
         if(edge(x, y, 0)){
-            if(o[x][y-1] == 0){
+            if((zero && o[x][y-1] == 0) || o[x][y-1] == own){
                 k++;
             }
         }
         if(edge(x, y, 1)){
-            if(o[x][y+1] == 0){
+            if((zero && o[x][y+1] == 0) || o[x][y+1] == own){
                 k++;
             }
         }
         if(edge(x, y, 2)){
-            if(o[x-1][y] == 0){
+            if((zero && o[x-1][y] == 0) || o[x-1][y] == own){
                 k++;
             }
         }
         if(edge(x, y, 3)){
-            if(o[x+1][y] == 0){
+            if((zero && o[x+1][y] == 0) || o[x+1][y] == own){
                 k++;
             }
         }
         if(edge(x, y, 0) && edge(x, y, 2)){
-            if(o[x-1][y-1] == 0){
+            if((zero && o[x-1][y-1] == 0) || o[x-1][y-1] == own){
                 k++;
             }
         }
         if(edge(x, y, 0) && edge(x, y, 3)){
-            if(o[x+1][y-1] == 0){
+            if((zero && o[x+1][y-1] == 0) || o[x+1][y-1] == own){
                 k++;
             }
         }
         if(edge(x, y, 1) && edge(x, y, 2)){
-            if(o[x-1][y+1] == 0){
+            if((zero && o[x-1][y+1] == 0) || o[x-1][y+1] == own){
                 k++;
             }
         }
         if(edge(x, y, 1) && edge(x, y, 3)){
-            if(o[x+1][y+1] == 0){
+            if((zero && o[x+1][y+1] == 0) || o[x+1][y+1] == own){
                 k++;
             }
         }
-        if(k == 8){
+        if(k == 8||(!zero && k>0)){
+            b = true;
+        }
+        return b;
+    }
+    public boolean checkI(int x, int y, int imp){
+        int k = 0;
+        boolean b = false;
+        if(edge(x, y, 0)){
+            if(i[x][y-1] == imp){
+                k++;
+            }
+        }
+        if(edge(x, y, 1)){
+            if(i[x][y+1] == imp){
+                k++;
+            }
+        }
+        if(edge(x, y, 2)){
+            if(i[x-1][y] == imp){
+                k++;
+            }
+        }
+        if(edge(x, y, 3)){
+            if(i[x+1][y] == imp){
+                k++;
+            }
+        }
+        if(edge(x, y, 0) && edge(x, y, 2)){
+            if(i[x-1][y-1] == imp){
+                k++;
+            }
+        }
+        if(edge(x, y, 0) && edge(x, y, 3)){
+            if(i[x+1][y-1] == imp){
+                k++;
+            }
+        }
+        if(edge(x, y, 1) && edge(x, y, 2)){
+            if(i[x-1][y+1] == imp){
+                k++;
+            }
+        }
+        if(edge(x, y, 1) && edge(x, y, 3)){
+            if(i[x+1][y+1] == imp){
+                k++;
+            }
+        }
+        if(k < 2){
             b = true;
         }
         return b;
